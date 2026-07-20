@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, Sparkles } from "lucide-react";
 import { STATUSES, STATUS_STYLES } from "../constants/status";
 import ConfirmDialog from "./ConfirmDialog";
 
@@ -10,6 +10,7 @@ export default function JobCard({
   onDelete,
   onEdit,
   onStatusChange,
+  onScore,
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: job._id,
@@ -42,6 +43,18 @@ export default function JobCard({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
+              onScore(job);
+            }}
+            aria-label="Score CV match"
+            className="rounded p-1 text-slate-300 hover:bg-hunter/10 hover:text-hunter"
+          >
+            <Sparkles className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
               onEdit(job);
             }}
             aria-label="Edit job application"
@@ -64,7 +77,7 @@ export default function JobCard({
         </div>
       )}
 
-      <p className="pr-12 font-semibold text-slate-800">{job.role}</p>
+      <p className="pr-16 font-semibold text-slate-800">{job.role}</p>
       <p className="mt-0.5 text-sm text-slate-500">{job.company}</p>
       {appliedDate && (
         <p className="mt-2 text-xs font-medium text-slate-400">

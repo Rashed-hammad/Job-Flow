@@ -7,6 +7,7 @@ import {
   updateJob,
   deleteJob,
 } from "../controllers/jobController.js";
+import { scoreMatch } from "../controllers/matchController.js";
 import { JOB_STATUSES } from "../models/JobApplication.js";
 import validateRequest from "../middleware/validateRequest.js";
 import protect from "../middleware/authMiddleware.js";
@@ -47,5 +48,13 @@ router.put(
   updateJob,
 );
 router.delete("/:id", jobIdParam, validateRequest, deleteJob);
+
+router.post(
+  "/:id/score",
+  jobIdParam,
+  body("cvId").isMongoId().withMessage("Invalid CV id"),
+  validateRequest,
+  scoreMatch,
+);
 
 export default router;

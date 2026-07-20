@@ -8,6 +8,7 @@ export default function KanbanColumn({
   onDelete,
   onEdit,
   onStatusChange,
+  onScore,
   fullWidth = false,
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
@@ -43,6 +44,7 @@ export default function KanbanColumn({
               onDelete={onDelete}
               onEdit={onEdit}
               onStatusChange={onStatusChange}
+              onScore={onScore}
             />
           ))
         )}

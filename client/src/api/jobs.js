@@ -8,6 +8,9 @@ export const updateJobStatus = (id, status, token) =>
 export const createJob = (job, token) =>
   apiFetch("/jobs", { method: "POST", body: job, token });
 
+export const scoreJobMatch = (jobId, cvId, token) =>
+  apiFetch(`/jobs/${jobId}/score`, { method: "POST", body: { cvId }, token });
+
 export const deleteJob = (id, token) =>
   apiFetch(`/jobs/${id}`, { method: "DELETE", token });
 

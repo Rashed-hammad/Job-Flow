@@ -1,21 +1,25 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
-import { Plus, LogOut } from "lucide-react";
+import { Plus } from "lucide-react";
 import KanbanColumn from "./KanbanColumn";
 import JobCard from "./JobCard";
 import StatusTabs from "./StatusTabs";
 import AddJobModal from "./AddJobModal";
 import EditJobModal from "./EditJobModal";
+import MatchScoreModal from "./MatchScoreModal";
 import { getJobs, updateJobStatus, deleteJob } from "../api/jobs";
 import { STATUSES } from "../constants/status";
 
-export default function KanbanBoard({ token, onLogout }) {
+export default function KanbanBoard() {
+  const { token } = useOutletContext();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeId, setActiveId] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
+  const [scoringJob, setScoringJob] = useState(null);
   const [activeStatus, setActiveStatus] = useState(STATUSES[0]);
 
   useEffect(() => {
@@ -63,39 +67,18 @@ export default function KanbanBoard({ token, onLogout }) {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-champagne/40 via-white to-white">
-      <header className="border-b border-champagne bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
-              Job<span className="text-hunter">Flow</span>
-            </h1>
-            <p className="hidden text-sm text-slate-500 sm:block">
-              Your application pipeline
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowAddModal(true)}
-              aria-label="Add job"
-              className="flex items-center gap-1.5 rounded-lg bg-hunter px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sage"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add job</span>
-            </button>
-            <button
-              onClick={onLogout}
-              aria-label="Log out"
-              className="flex items-center gap-1.5 rounded-lg border border-champagne bg-white px-3.5 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-champagne/30"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Log out</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
+    <>
       <main className="mx-auto max-w-7xl px-4 py-6">
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-hunter px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sage sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            Add job
+          </button>
+        </div>
+
         {error && (
           <p className="mb-4 rounded-lg bg-brick/10 px-3.5 py-2.5 text-sm text-brick ring-1 ring-brick/20">
             {error}
@@ -130,6 +113,7 @@ export default function KanbanBoard({ token, onLogout }) {
                       jobs={jobs.filter((j) => j.status === status)}
                       onDelete={handleDelete}
                       onEdit={setEditingJob}
+                      onScore={setScoringJob}
                     />
                   ))}
                 </div>
@@ -151,6 +135,7 @@ export default function KanbanBoard({ token, onLogout }) {
                 onDelete={handleDelete}
                 onEdit={setEditingJob}
                 onStatusChange={changeJobStatus}
+                onScore={setScoringJob}
               />
             </div>
           </>
@@ -181,6 +166,14 @@ export default function KanbanBoard({ token, onLogout }) {
           }}
         />
       )}
-    </div>
+
+      {scoringJob && (
+        <MatchScoreModal
+          job={scoringJob}
+          token={token}
+          onClose={() => setScoringJob(null)}
+        />
+      )}
+    </>
   );
 }
