@@ -8,3 +8,10 @@ export const register = (name, email, password) =>
     method: "POST",
     body: { name, email, password },
   });
+
+export const updateReminderPreference = (remindersEnabled, token) =>
+  apiFetch("/auth/me", {
+    method: "PATCH",
+    body: { remindersEnabled },
+    token,
+  });

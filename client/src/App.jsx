@@ -23,6 +23,12 @@ function App() {
     setUser(data.user);
   };
 
+  const handleUpdateUser = (updatedUser) => {
+    const merged = { ...user, ...updatedUser };
+    localStorage.setItem("user", JSON.stringify(merged));
+    setUser(merged);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -47,7 +53,12 @@ function App() {
         <Route element={<ProtectedRoute token={token} />}>
           <Route
             element={
-              <Layout token={token} user={user} onLogout={handleLogout} />
+              <Layout
+                token={token}
+                user={user}
+                onLogout={handleLogout}
+                onUpdateUser={handleUpdateUser}
+              />
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />

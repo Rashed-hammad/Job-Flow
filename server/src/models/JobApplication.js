@@ -36,9 +36,15 @@ const jobApplicationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    lastReminderSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
+
+jobApplicationSchema.index({ status: 1, appliedDate: 1, lastReminderSentAt: 1 });
 
 export const JOB_STATUSES = STATUSES;
 

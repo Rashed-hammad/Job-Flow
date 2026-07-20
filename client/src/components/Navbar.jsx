@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, Bell, BellOff } from "lucide-react";
 import Logo from "./Logo";
+import { updateReminderPreference } from "../api/auth";
 
 const NAV_LINKS = [
   { to: "/board", label: "Board" },
@@ -16,7 +18,24 @@ const getInitials = (name) =>
     .map((word) => word[0].toUpperCase())
     .join("");
 
-export default function Navbar({ user, onLogout }) {
+export default function Navbar({ user, onLogout, token, onUpdateUser }) {
+  const [updating, setUpdating] = useState(false);
+  const remindersOn = user?.remindersEnabled !== false;
+
+  const handleToggleReminders = async () => {
+    const nextValue = !remindersOn;
+    onUpdateUser({ remindersEnabled: nextValue });
+    setUpdating(true);
+    try {
+      const { user: updatedUser } = await updateReminderPreference(nextValue, token);
+      onUpdateUser(updatedUser);
+    } catch {
+      onUpdateUser({ remindersEnabled: !nextValue });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <header className="border-b border-champagne bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
@@ -61,6 +80,33 @@ export default function Navbar({ user, onLogout }) {
               <span className="hidden text-sm font-medium text-slate-700 sm:inline">
                 {user.name}
               </span>
+              <button
+                type="button"
+                onClick={handleToggleReminders}
+                disabled={updating}
+                aria-label={
+                  remindersOn ? "Disable email reminders" : "Enable email reminders"
+                }
+                aria-pressed={remindersOn}
+                title={`Email reminders for stale applications: ${
+                  remindersOn ? "on" : "off"
+                } — click to turn ${remindersOn ? "off" : "on"}`}
+                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                  remindersOn ? "bg-hunter" : "bg-slate-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm transition-transform ${
+                    remindersOn ? "translate-x-4" : "translate-x-0"
+                  }`}
+                >
+                  {remindersOn ? (
+                    <Bell className="h-2.5 w-2.5 text-hunter" />
+                  ) : (
+                    <BellOff className="h-2.5 w-2.5 text-slate-400" />
+                  )}
+                </span>
+              </button>
             </div>
           )}
           <button

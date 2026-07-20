@@ -21,7 +21,12 @@ export const register = async (req, res, next) => {
 
     res.status(201).json({
       token,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        remindersEnabled: user.remindersEnabled,
+      },
     });
   } catch (error) {
     next(error);
@@ -46,7 +51,12 @@ export const login = async (req, res, next) => {
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        remindersEnabled: user.remindersEnabled,
+      },
     });
   } catch (error) {
     next(error);
@@ -55,4 +65,22 @@ export const login = async (req, res, next) => {
 
 export const getMe = async (req, res) => {
   res.json({ user: req.user });
+};
+
+export const updatePreferences = async (req, res, next) => {
+  try {
+    req.user.remindersEnabled = req.body.remindersEnabled;
+    await req.user.save();
+
+    res.json({
+      user: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        remindersEnabled: req.user.remindersEnabled,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };

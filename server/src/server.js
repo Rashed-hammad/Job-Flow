@@ -6,9 +6,11 @@ import authRoutes from "./routes/authRoutes.js";
 import healthRoutes from "./routes/healthRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import cvRoutes from "./routes/cvRoutes.js";
+import { startReminderScheduler } from "./jobs/scheduler.js";
 
 dotenv.config();
 connectDB();
+startReminderScheduler();
 
 const app = express();
 

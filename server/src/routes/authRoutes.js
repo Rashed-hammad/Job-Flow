@@ -1,6 +1,11 @@
 import express from "express";
 import { body } from "express-validator";
-import { register, login, getMe } from "../controllers/authController.js";
+import {
+  register,
+  login,
+  getMe,
+  updatePreferences,
+} from "../controllers/authController.js";
 import validateRequest from "../middleware/validateRequest.js";
 import protect from "../middleware/authMiddleware.js";
 
@@ -36,5 +41,15 @@ router.post(
 );
 
 router.get("/me", protect, getMe);
+
+router.patch(
+  "/me",
+  protect,
+  body("remindersEnabled")
+    .isBoolean()
+    .withMessage("remindersEnabled must be a boolean"),
+  validateRequest,
+  updatePreferences,
+);
 
 export default router;

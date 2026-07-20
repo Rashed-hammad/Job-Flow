@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false,
     },
+    remindersEnabled: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true },
 );
