@@ -4,6 +4,7 @@ import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import KanbanBoard from "./components/KanbanBoard";
 import CvManager from "./pages/CvManager";
+import Dashboard from "./pages/Dashboard";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -49,6 +50,7 @@ function App() {
               <Layout token={token} user={user} onLogout={handleLogout} />
             }
           >
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/board" element={<KanbanBoard />} />
             <Route path="/cvs" element={<CvManager />} />
           </Route>

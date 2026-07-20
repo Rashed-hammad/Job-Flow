@@ -1,5 +1,15 @@
 export const STATUSES = ["Applied", "Interview", "Offer", "Rejected"];
 
+// Validated with dataviz's palette validator (adjacent-pairs, categorical, 4 slots):
+// worst adjacent CVD floor-band WARN (legal with direct value labels as secondary
+// encoding); light-mode contrast WARN on amber mitigated the same way.
+export const STATUS_CHART_COLORS = {
+  Applied: "#2a78d6",
+  Interview: "#eda100",
+  Offer: "#008300",
+  Rejected: "#e34948",
+};
+
 export const STATUS_STYLES = {
   Applied: {
     dot: "bg-blue-500",

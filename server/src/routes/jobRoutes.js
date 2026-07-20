@@ -6,6 +6,7 @@ import {
   getJobById,
   updateJob,
   deleteJob,
+  getJobStats,
 } from "../controllers/jobController.js";
 import { scoreMatch } from "../controllers/matchController.js";
 import { JOB_STATUSES } from "../models/JobApplication.js";
@@ -39,6 +40,7 @@ const createJobRules = [
 
 router.post("/", createJobRules, validateRequest, createJob);
 router.get("/", getJobs);
+router.get("/stats", getJobStats);
 router.get("/:id", jobIdParam, validateRequest, getJobById);
 router.put(
   "/:id",

@@ -4,6 +4,7 @@ import Logo from "./Logo";
 
 const NAV_LINKS = [
   { to: "/board", label: "Board" },
+  { to: "/dashboard", label: "Dashboard" },
   { to: "/cvs", label: "My CVs" },
 ];
 
