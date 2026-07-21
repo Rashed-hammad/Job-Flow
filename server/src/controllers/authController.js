@@ -1,5 +1,7 @@
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { getTransporter, emailFrom } from "../config/mailer.js";
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -65,6 +67,69 @@ export const login = async (req, res, next) => {
 
 export const getMe = async (req, res) => {
   res.json({ user: req.user });
+};
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (user) {
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      user.resetPasswordToken = crypto
+        .createHash("sha256")
+        .update(rawToken)
+        .digest("hex");
+      user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
+      await user.save();
+
+      const transporter = getTransporter();
+      if (transporter) {
+        const resetUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password/${rawToken}`;
+        await transporter.sendMail({
+          from: emailFrom,
+          to: user.email,
+          subject: "Reset your JobFlow password",
+          html: `<p>Click below to reset your password (valid for 1 hour):</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you didn't request this, ignore this email.</p>`,
+          text: `Reset your password (valid for 1 hour): ${resetUrl}\n\nIf you didn't request this, ignore this email.`,
+        });
+      } else {
+        console.warn("[auth] Password reset requested but mailer not configured");
+      }
+    }
+
+    res.json({
+      message: "If that email is registered, a reset link has been sent.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Password reset token is invalid or has expired." });
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: "Password has been reset. You can now log in." });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const updatePreferences = async (req, res, next) => {

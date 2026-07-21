@@ -60,9 +60,17 @@ export default function LoginForm({ onLogin }) {
             className="mb-4 w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-hunter focus:outline-none focus:ring-4 focus:ring-hunter/10"
           />
 
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Password
-          </label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="block text-sm font-medium text-slate-700">
+              Password
+            </label>
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-hunter hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <input
             type="password"
             value={password}

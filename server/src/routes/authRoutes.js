@@ -1,10 +1,12 @@
 import express from "express";
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import {
   register,
   login,
   getMe,
   updatePreferences,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/authController.js";
 import validateRequest from "../middleware/validateRequest.js";
 import protect from "../middleware/authMiddleware.js";
@@ -50,6 +52,28 @@ router.patch(
     .withMessage("remindersEnabled must be a boolean"),
   validateRequest,
   updatePreferences,
+);
+
+router.post(
+  "/forgot-password",
+  body("email")
+    .isEmail()
+    .withMessage("Valid email is required")
+    .normalizeEmail(),
+  validateRequest,
+  forgotPassword,
+);
+
+router.post(
+  "/reset-password/:token",
+  [
+    param("token").notEmpty(),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters"),
+  ],
+  validateRequest,
+  resetPassword,
 );
 
 export default router;

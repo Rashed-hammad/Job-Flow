@@ -15,3 +15,12 @@ export const updateReminderPreference = (remindersEnabled, token) =>
     body: { remindersEnabled },
     token,
   });
+
+export const forgotPassword = (email) =>
+  apiFetch("/auth/forgot-password", { method: "POST", body: { email } });
+
+export const resetPassword = (token, password) =>
+  apiFetch(`/auth/reset-password/${token}`, {
+    method: "POST",
+    body: { password },
+  });

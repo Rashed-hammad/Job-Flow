@@ -2,6 +2,8 @@ import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
+import ForgotPasswordForm from "./components/ForgotPasswordForm";
+import ResetPasswordForm from "./components/ResetPasswordForm";
 import KanbanBoard from "./components/KanbanBoard";
 import CvManager from "./pages/CvManager";
 import Dashboard from "./pages/Dashboard";
@@ -47,6 +49,11 @@ function App() {
           <Route
             path="/register"
             element={<RegisterForm onRegister={handleAuthenticated} />}
+          />
+          <Route path="/forgot-password" element={<ForgotPasswordForm />} />
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPasswordForm />}
           />
         </Route>
 
