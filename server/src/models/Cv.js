@@ -11,8 +11,8 @@ const cvSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    storedFilename: {
-      type: String,
+    fileId: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     size: {

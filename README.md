@@ -11,7 +11,9 @@ digest reminder for applications that have gone stale.
   an email-based forgot-password/reset flow.
 - **Kanban board** — drag-and-drop job applications across Applied / Interview
   / Offer / Rejected.
-- **CV upload** — store PDF CVs per user, download or delete them later.
+- **CV upload** — store PDF CVs per user (in MongoDB GridFS, so it survives
+  redeploys on hosts with an ephemeral filesystem), download or delete them
+  later.
 - **AI match scoring** — score a stored CV against a job's description using
   the Claude API, returning a 0–100 score with strengths, gaps, and an
   explanation.
@@ -25,12 +27,14 @@ digest reminder for applications that have gone stale.
 
 ```
 job-tracker/
+├── render.yaml                       # Render Blueprint for the API deploy
 ├── server/                          # Express API
 │   ├── src/
 │   │   ├── config/
 │   │   │   ├── db.js                # MongoDB Atlas connection
 │   │   │   ├── mailer.js            # Nodemailer transporter (no-ops if unconfigured)
-│   │   │   └── upload.js            # Multer config for CV uploads
+│   │   │   ├── gridfs.js            # GridFS bucket helper (CV file storage)
+│   │   │   └── upload.js            # Multer config (memory storage) for CV uploads
 │   │   ├── controllers/
 │   │   │   ├── authController.js
 │   │   │   ├── jobController.js
@@ -53,8 +57,8 @@ job-tracker/
 │   │   │   └── cvRoutes.js
 │   │   └── server.js                # App entry point
 │   ├── scripts/
-│   │   └── run-reminder-sweep.js    # Manually trigger the reminder sweep
-│   ├── uploads/cvs/                 # Uploaded CV files (gitignored)
+│   │   ├── run-reminder-sweep.js    # Manually trigger the reminder sweep
+│   │   └── migrate-cvs-to-gridfs.js # One-time: migrate pre-GridFS CVs (disk -> GridFS)
 │   ├── .env                         # Your local secrets (gitignored)
 │   ├── .env.example                 # Template — copy to .env and fill in
 │   └── package.json
@@ -96,6 +100,35 @@ from 5000 because macOS AirPlay Receiver occupies port 5000).
 2. Copy `.env.example` to `.env` — `VITE_API_URL` should point at the
    server's `/api` base (`http://localhost:5001/api` by default)
 3. `npm run dev` — starts the Vite dev server
+
+## Deployment
+
+The API deploys to **Render**, the client to **Vercel**. MongoDB Atlas
+(already in use for local dev) is the database for both.
+
+### API → Render
+1. `render.yaml` at the repo root is a Render **Blueprint** — on Render, go
+   New → Blueprint → select this GitHub repo, and it picks up the service
+   config (root dir `server`, build/start commands) automatically.
+2. Fill in the prompted secrets in Render's dashboard (same values as your
+   local `server/.env`) — `MONGO_URI`, `JWT_SECRET`, `ANTHROPIC_API_KEY`,
+   `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASS`/`EMAIL_FROM`. Leave
+   `CLIENT_URL` for last (see step 4) — it isn't known until the client is
+   deployed.
+3. In MongoDB Atlas → Network Access, allow `0.0.0.0/0` — Render's outbound
+   IPs aren't static, and DB auth (already in `MONGO_URI`) still protects
+   the connection.
+4. Once live, you'll have a URL like `https://jobflow-api.onrender.com`.
+
+### Client → Vercel
+1. Vercel → Add New Project → import the same repo → set **Root Directory**
+   to `client` (Vercel auto-detects the Vite build).
+2. Set env var `VITE_API_URL` = `<your Render URL>/api`.
+3. Deploy — you'll get a URL like `https://job-flow.vercel.app`.
+4. **Loop back to Render**: set `CLIENT_URL` to this Vercel URL and
+   redeploy/restart the API service — both the reminder-email "View your
+   board" link and the password-reset link are built from `CLIENT_URL`, and
+   CORS (`server.js`) only accepts requests from that origin.
 
 ## API endpoints
 
@@ -214,6 +247,15 @@ Returns `{ score, strengths, gaps, explanation }`.
   `POST /api/auth/forgot-password` always returns the same generic message
   whether or not the email is registered, to avoid leaking which emails have
   accounts.
+- CV files are stored in **MongoDB GridFS** (`config/gridfs.js`), not local
+  disk — `multer.memoryStorage()` buffers the upload, then it's streamed
+  into GridFS. This is what makes CVs survive redeploys on a host like
+  Render, where the filesystem is ephemeral. `server/scripts/migrate-cvs-to-gridfs.js`
+  is a one-time script that moved any CVs from the old disk-based scheme.
+- CORS (`server.js`) is locked to `CLIENT_URL` rather than left wide open —
+  cheap to do since `CLIENT_URL` already exists for the reminder/reset email
+  links, and it means only the deployed frontend (or your local dev client)
+  can call the API from a browser.
 
 ## Possible next steps
 

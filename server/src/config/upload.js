@@ -1,14 +1,6 @@
-import fs from "fs";
-import path from "path";
 import multer from "multer";
 
-export const uploadDir = path.resolve("uploads/cvs");
-fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => cb(null, `${req.user._id}-${Date.now()}.pdf`),
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   if (file.mimetype !== "application/pdf") {

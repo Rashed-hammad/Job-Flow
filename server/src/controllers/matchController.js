@@ -1,9 +1,7 @@
-import fs from "fs";
-import path from "path";
 import Anthropic from "@anthropic-ai/sdk";
 import JobApplication from "../models/JobApplication.js";
 import Cv from "../models/Cv.js";
-import { uploadDir } from "../config/upload.js";
+import { getBucket } from "../config/gridfs.js";
 
 const scoreSchema = {
   type: "object",
@@ -52,10 +50,15 @@ export const scoreMatch = async (req, res, next) => {
       return res.status(404).json({ message: "CV not found" });
     }
 
-    const pdfBase64 = await fs.promises.readFile(
-      path.join(uploadDir, cv.storedFilename),
-      { encoding: "base64" },
-    );
+    const chunks = [];
+    await new Promise((resolve, reject) => {
+      getBucket()
+        .openDownloadStream(cv.fileId)
+        .on("data", (chunk) => chunks.push(chunk))
+        .on("error", reject)
+        .on("end", resolve);
+    });
+    const pdfBase64 = Buffer.concat(chunks).toString("base64");
 
     const client = new Anthropic();
 
